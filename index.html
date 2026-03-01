@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Band Rider — Midnight in November</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════
+   THEME VARIABLES
+═══════════════════════════════════════════════════════ */
+[data-theme="dark"] {
+  --bg:         #0c0d0f;
+  --surface:    #14161a;
+  --surface2:   #1c1f25;
+  --surface3:   #22262e;
+  --border:     #2a2e38;
+  --border2:    #353a45;
+  --text:       #e8eaf0;
+  --text-dim:   #5a6070;
+  --text-mid:   #8892a4;
+  --input-bg:   #1c1f25;
+  --header-bg:  linear-gradient(135deg,#08090b 0%,#10131a 60%,#0c0d0f 100%);
+  --section-bg: #14161a;
+  --stage-bg:   linear-gradient(180deg,#1a2235 0%,#151a26 100%);
+  --table-head: #1c1f25;
+  --shadow:     0 4px 24px rgba(0,0,0,.5);
+}
+[data-theme="light"] {
+  --bg:         #f4f5f7;
+  --surface:    #ffffff;
+  --surface2:   #f8f9fa;
+  --surface3:   #edf0f4;
+  --border:     #dde1e8;
+  --border2:    #c8cdd8;
+  --text:       #1a1d24;
+  --text-dim:   #8892a4;
+  --text-mid:   #5a6070;
+  --input-bg:   #f4f5f7;
+  --header-bg:  linear-gradient(135deg,#1a1d24 0%,#22283a 60%,#1a1d24 100%);
+  --section-bg: #ffffff;
+  --stage-bg:   linear-gradient(180deg,#dce8f5 0%,#c8d8ec 100%);
+  --table-head: #f0f2f5;
+  --shadow:     0 2px 12px rgba(0,0,0,.08);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background .25s,color .25s;}
+
+/* ═══════════════════════════════════════════════════════
+   PRINT
+═══════════════════════════════════════════════════════ */
+@media print {
+  body{background:#fff!important;color:#000!important;}
+  .no-print{display:none!important;}
+  .page-header{background:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .section-card{border:1px solid #ccc!important;background:#fff!important;break-inside:avoid;box-shadow:none!important;}
+  .section-title{color:#000!important;}
+  .subsection-label{color:#333!important;}
+  table{border-collapse:collapse;width:100%;}
+  th,td{border:1px solid #ccc!important;color:#000!important;background:#fff!important;padding:6px 10px!important;}
+  th{background:#f3f4f6!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  input,textarea{color:#000!important;background:transparent!important;border:none!important;}
+  .slider-fill{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .slider-track{background:#e5e7eb!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .value-badge{background:#e5e7eb!important;color:#111!important;}
+  .type-badge{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .stage-canvas{border:2px solid #999!important;background:#eee!important;}
+  .stage-block{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  .mixer-card{break-inside:avoid;border:1px solid #ccc!important;}
+}
+
+/* ═══════════════════════════════════════════════════════
+   LOADING
+═══════════════════════════════════════════════════════ */
+#loading-screen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;z-index:9999;
+}
+.loading-title{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:5px;color:var(--text);}
+.loading-bar{width:220px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.loading-fill{height:100%;background:linear-gradient(90deg,#1d4ed8,#3b82f6);animation:loadbar 1.2s ease-in-out infinite;}
+@keyframes loadbar{0%{width:0;margin-left:0}50%{width:60%;margin-left:20%}100%{width:0;margin-left:100%}}
+.loading-sub{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--text-dim);text-transform:uppercase;}
+
+/* ═══════════════════════════════════════════════════════
+   PAGE HEADER
+═══════════════════════════════════════════════════════ */
+.page-header{
+  background:var(--header-bg);
+  border-bottom:1px solid var(--border);
+  padding:22px 40px 18px;
+  display:flex;align-items:flex-end;justify-content:space-between;gap:20px;
+  position:sticky;top:0;z-index:100;
+}
+.header-left h1{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;line-height:1;color:#fff;}
+.header-left .subtitle{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:#3b82f6;text-transform:uppercase;margin-top:3px;}
+.header-right{display:flex;gap:8px;align-items:center;}
+
+.sync-status{display:flex;align-items:center;gap:7px;font-family:'DM Mono',monospace;font-size:11px;color:#999;padding:6px 12px;border:1px solid rgba(255,255,255,.1);border-radius:6px;background:rgba(255,255,255,.05);}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#555;transition:background .3s;flex-shrink:0;}
+.sync-dot.ok{background:#34d399;animation:pulse 2.5s infinite;}
+.sync-dot.saving{background:#fbbf24;}
+.sync-dot.error{background:#f87171;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ═══════════════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════════════ */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;border:none;transition:all .15s;text-transform:uppercase;}
+.btn-primary{background:#3b82f6;color:#fff;}
+.btn-primary:hover{background:#2563eb;transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);}
+.btn-ghost:hover{border-color:rgba(255,255,255,.4);color:#fff;}
+.btn-theme{background:transparent;color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);font-size:14px;padding:7px 12px;}
+.btn-theme:hover{background:rgba(255,255,255,.1);}
+
+/* ═══════════════════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════════════════ */
+.main-content{padding:32px 40px;max-width:1200px;margin:0 auto;}
+
+/* ═══════════════════════════════════════════════════════
+   SECTION CARDS
+═══════════════════════════════════════════════════════ */
+.section-card{
+  background:var(--section-bg);
+  border:1px solid var(--border);
+  border-radius:12px;
+  margin-bottom:28px;
+  overflow:visible;
+  box-shadow:var(--shadow);
+  transition:background .25s,border-color .25s;
+}
+.section-card-header{
+  background:var(--surface2);
+  border-bottom:1px solid var(--border);
+  padding:18px 24px;
+  display:flex;align-items:center;gap:12px;
+  border-radius:12px 12px 0 0;
+}
+.section-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:32px;
+  letter-spacing:2px;
+  color:var(--text);
+  flex:1;
+  line-height:1;
+}
+.section-body{padding:24px;}
+
+/* ═══════════════════════════════════════════════════════
+   SUBSECTION LABELS
+═══════════════════════════════════════════════════════ */
+.subsection-label{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:20px;
+  letter-spacing:1.5px;
+  color:var(--text);
+  margin:22px 0 12px;
+  display:flex;align-items:center;gap:12px;
+}
+.subsection-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.subsection-label:first-child{margin-top:0;}
+
+/* ═══════════════════════════════════════════════════════
+   INPUTS & FIELDS
+═══════════════════════════════════════════════════════ */
+.field-row{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:14px;}
+.field-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:150px;}
+.field-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;}
+.field-input{background:var(--input-bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:8px 12px;border-radius:6px;outline:none;transition:border-color .15s,background .25s;width:100%;}
+.field-input:focus{border-color:#3b82f6;}
+.field-input::placeholder{color:var(--text-dim);}
+.field-input[readonly]{cursor:default;}
+
+.editable-block{background:var(--input-bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.7;padding:12px 14px;outline:none;width:100%;resize:vertical;min-height:72px;transition:border-color .15s;border-radius:6px;overflow-y:hidden;}
+.editable-block:focus{border-color:#3b82f6;}
+.editable-block::placeholder{color:var(--text-dim);}
+
+/* ═══════════════════════════════════════════════════════
+   MEMBERS / CONTACTS
+═══════════════════════════════════════════════════════ */
+.list-rows{display:flex;flex-direction:column;gap:8px;}
+.list-row{display:flex;align-items:center;gap:8px;}
+.list-row .field-input{flex:1;}
+
+.del-btn{width:28px;height:28px;border-radius:5px;border:1px solid transparent;background:transparent;color:var(--text-dim);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .1s;flex-shrink:0;}
+.del-btn:hover{color:#f87171;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06);}
+
+.add-row-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:transparent;border:1px dashed rgba(52,211,153,.4);color:#34d399;border-radius:6px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all .15s;letter-spacing:.5px;}
+.add-row-btn:hover{background:rgba(52,211,153,.08);border-color:#34d399;}
+
+/* ═══════════════════════════════════════════════════════
+   TEXT BLOCK PARAGRAPHS
+═══════════════════════════════════════════════════════ */
+.text-block-wrap{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;}
+.text-block-wrap:last-child{margin-bottom:0;}
+.text-block-wrap .editable-block{flex:1;}
+.para-del-btn{width:28px;height:28px;border-radius:5px;border:1px solid transparent;background:transparent;color:var(--text-dim);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .1s;flex-shrink:0;margin-top:4px;}
+.para-del-btn:hover{color:#f87171;border-color:rgba(248,113,113,.3);background:rgba(248,113,113,.06);}
+
+/* ═══════════════════════════════════════════════════════
+   CHANNEL TABLE
+═══════════════════════════════════════════════════════ */
+.table-wrap{overflow-x:auto;}
+table.channel-table{width:100%;border-collapse:collapse;}
+.channel-table th{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1.5px;color:var(--text-dim);text-transform:uppercase;text-align:left;padding:10px 12px;background:var(--table-head);border-bottom:1px solid var(--border);white-space:nowrap;}
+.channel-table td{padding:5px 8px;border-bottom:1px solid var(--border);vertical-align:middle;transition:background .1s;}
+.channel-table tr:last-child td{border-bottom:none;}
+.channel-table tr:hover td{background:var(--surface2);}
+.channel-table td input,.channel-table td textarea{background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;width:100%;padding:3px 4px;border-radius:3px;transition:background .1s;resize:none;}
+.channel-table td input:focus,.channel-table td textarea:focus{background:var(--surface2);}
+.channel-table td:first-child{color:var(--text-dim);font-family:'DM Mono',monospace;font-size:11px;width:36px;text-align:center;}
+.row-del{width:22px;height:22px;border-radius:4px;border:none;background:transparent;color:var(--border);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:color .1s;}
+.row-del:hover{color:#f87171;}
+.table-add-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;background:transparent;border:1px dashed rgba(52,211,153,.4);color:#34d399;border-radius:6px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all .15s;}
+.table-add-btn:hover{background:rgba(52,211,153,.08);border-color:#34d399;}
+
+/* ═══════════════════════════════════════════════════════
+   STAGE PLOT
+═══════════════════════════════════════════════════════ */
+.stage-outer{position:relative;display:flex;flex-direction:column;gap:8px;}
+.stage-canvas{
+  position:relative;
+  background:var(--stage-bg);
+  border:2px solid var(--border2);
+  border-radius:8px;
+  overflow:hidden;
+  user-select:none;
+  cursor:default;
+  width:100%;
+  aspect-ratio:3/2;
+}
+[data-theme="light"] .stage-canvas{border-color:#b0bec5;}
+
+.stage-label-bar{position:absolute;top:0;left:0;right:0;height:30px;background:rgba(59,130,246,.12);border-bottom:1px solid rgba(59,130,246,.25);display:flex;align-items:center;justify-content:center;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:rgba(59,130,246,.8);text-transform:uppercase;pointer-events:none;}
+.stage-audience-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--text-dim);text-transform:uppercase;text-align:center;margin-top:6px;}
+
+.stage-block{
+  position:absolute;border-radius:7px;border:1.5px solid rgba(255,255,255,.18);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  cursor:grab;transition:box-shadow .15s;font-family:'DM Sans',sans-serif;
+  min-width:48px;min-height:40px;overflow:hidden;
+}
+.stage-block:active{cursor:grabbing;}
+.stage-block.selected{box-shadow:0 0 0 2px #3b82f6,0 6px 20px rgba(0,0,0,.4)!important;}
+.stage-block .block-icon{font-size:16px;line-height:1;pointer-events:none;}
+.stage-block .block-name{font-size:10px;font-weight:700;letter-spacing:.3px;text-align:center;padding:0 4px;line-height:1.2;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9);pointer-events:none;word-break:break-word;}
+.stage-block .block-name-input{font-size:10px;font-weight:700;background:rgba(0,0,0,.4);border:none;border-bottom:1px solid rgba(255,255,255,.4);color:#fff;text-align:center;outline:none;width:85%;font-family:'DM Sans',sans-serif;border-radius:0;}
+
+/* Resize handle */
+.resize-handle{
+  position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;
+  background:rgba(255,255,255,.25);border-radius:2px 0 6px 0;
+  display:flex;align-items:center;justify-content:center;font-size:8px;color:rgba(255,255,255,.6);
+}
+.locked-stage .resize-handle,.locked-stage .stage-block{cursor:default!important;}
+.locked-stage .stage-block{pointer-events:none;}
+
+.stage-hint{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);text-align:center;margin-top:4px;letter-spacing:.5px;}
+
+.stage-controls{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center;}
+.stage-size-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);letter-spacing:1px;}
+
+.stage-palette{display:flex;flex-wrap:wrap;gap:8px;padding:14px 0 0;}
+.palette-block{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;border:1.5px solid rgba(255,255,255,.12);cursor:grab;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:#fff;transition:all .15s;white-space:nowrap;}
+[data-theme="light"] .palette-block{border-color:rgba(0,0,0,.1);}
+.palette-block:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.25);}
+.palette-block:active{cursor:grabbing;}
+.palette-block .picon{font-size:15px;}
+
+/* ═══════════════════════════════════════════════════════
+   MONITOR MIX CARDS
+═══════════════════════════════════════════════════════ */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(380px,1fr));gap:18px;}
+
+.mixer-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s,background .25s;}
+.mixer-card:hover{border-color:var(--border2);}
+.mixer-card.editing{border-color:#3b82f6;box-shadow:0 0 0 1px rgba(59,130,246,.12);}
+
+.card-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:10px;}
+.card-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:15px;color:#fff;flex-shrink:0;}
+.card-identity{flex:1;min-width:0;}
+.card-identity input{background:transparent;border:none;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;outline:none;width:100%;padding:1px 0;}
+.card-identity input::placeholder{color:var(--text-dim);}
+.card-identity .sub-row{display:flex;gap:6px;align-items:center;margin-top:2px;}
+.card-identity .instrument-input{font-size:12px;font-weight:400;color:var(--text-mid);flex:1;}
+.card-controls{display:flex;gap:4px;flex-shrink:0;}
+
+.type-badge{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;padding:2px 7px;border-radius:4px;flex-shrink:0;}
+.type-badge.wedge{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3);}
+.type-badge.iem{background:rgba(52,211,153,.12);color:#34d399;border:1px solid rgba(52,211,153,.3);}
+.card-type-select{font-family:'DM Mono',monospace;font-size:11px;background:var(--input-bg);border:1px solid var(--border);color:var(--text-mid);border-radius:4px;padding:2px 6px;outline:none;cursor:pointer;}
+
+.channels-list{padding:4px 0;}
+.channel-row{display:flex;align-items:center;gap:10px;padding:7px 16px;border-bottom:1px solid var(--border);transition:background .1s;}
+.channel-row:last-child{border-bottom:none;}
+.channel-row:hover{background:var(--surface2);}
+.channel-label{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-mid);width:115px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.channel-label input{background:transparent;border:none;color:var(--text-mid);font-family:'DM Mono',monospace;font-size:11px;outline:none;width:100%;}
+.slider-wrap{flex:1;position:relative;}
+.slider-track{height:6px;background:var(--surface2);border-radius:3px;position:relative;overflow:hidden;}
+[data-theme="light"] .slider-track{background:var(--surface3);}
+.slider-fill{height:100%;background:linear-gradient(90deg,#1d4ed8,#3b82f6,#60a5fa);border-radius:3px;transition:width .05s;}
+input[type="range"]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0;padding:0;-webkit-appearance:none;}
+input[type="range"]:disabled{cursor:default;}
+.value-badge{font-family:'DM Mono',monospace;font-size:11px;color:#60a5fa;background:rgba(59,130,246,.1);border-radius:4px;padding:2px 6px;min-width:36px;text-align:center;flex-shrink:0;}
+.del-channel-btn{width:18px;height:18px;border:none;background:transparent;color:var(--border);cursor:pointer;border-radius:3px;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color .1s;}
+.del-channel-btn:hover{color:#f87171;}
+.locked-overlay{pointer-events:none;}
+
+.notes-area{width:100%;background:var(--surface2);border:none;border-top:1px solid var(--border);color:var(--text-mid);font-family:'DM Sans',sans-serif;font-size:12px;padding:10px 16px;resize:none;outline:none;min-height:46px;transition:min-height .2s,background .25s;}
+.notes-area:focus{min-height:70px;color:var(--text);}
+.notes-area::placeholder{color:var(--border);}
+.notes-area:disabled{cursor:default;}
+
+.card-footer{padding:10px 16px;border-top:1px solid var(--border);background:var(--surface2);}
+.add-channel-row{display:flex;gap:8px;align-items:center;}
+.add-channel-row input{flex:1;background:transparent;border:none;border-bottom:1px dashed var(--border);color:var(--text-mid);font-family:'DM Mono',monospace;font-size:12px;padding:4px 0;outline:none;transition:border-color .15s;}
+.add-channel-row input:focus{border-color:#3b82f6;}
+.add-channel-row input::placeholder{color:var(--border);}
+.add-channel-btn{background:transparent;border:1px dashed rgba(52,211,153,.4);color:#34d399;border-radius:4px;padding:4px 10px;font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;letter-spacing:1px;transition:all .15s;}
+.add-channel-btn:hover{background:rgba(52,211,153,.08);border-color:#34d399;}
+
+.add-card-btn{display:flex;align-items:center;justify-content:center;gap:10px;padding:26px;border:2px dashed var(--border);border-radius:10px;background:transparent;color:var(--text-dim);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;width:100%;}
+.add-card-btn:hover{border-color:rgba(59,130,246,.5);color:#3b82f6;background:rgba(59,130,246,.05);}
+
+.icon-btn{width:28px;height:28px;border-radius:5px;border:1px solid transparent;background:transparent;color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:13px;}
+.icon-btn:hover{border-color:var(--border);color:var(--text);}
+.icon-btn.active{background:rgba(59,130,246,.12);border-color:#3b82f6;color:#3b82f6;}
+.icon-btn.confirm{color:#34d399;}
+.icon-btn.confirm:hover{border-color:#34d399;background:rgba(52,211,153,.08);}
+
+.timestamp{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:16px;text-align:right;opacity:.5;}
+</style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <div class="loading-title">Band Rider</div>
+  <div class="loading-bar"><div class="loading-fill"></div></div>
+  <div class="loading-sub">Connecting…</div>
+</div>
+
+<div id="app" style="display:none">
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE HEADER
+═══════════════════════════════════════════════════ -->
+<div class="page-header">
+  <div class="header-left">
+    <h1 id="header-band-name">Band Rider</h1>
+    <div class="subtitle">Technical Rider — Confidential</div>
+  </div>
+  <div class="header-right no-print">
+    <div class="sync-status">
+      <div class="sync-dot ok" id="sync-dot"></div>
+      <span id="sync-label">Live</span>
+    </div>
+    <button class="btn btn-theme" onclick="toggleTheme()" id="theme-btn" title="Toggle light/dark">☀️</button>
+    <button class="btn btn-ghost" onclick="window.open(window.location.href,'_blank')">↗ Open in Tab</button>
+    <button class="btn btn-primary" onclick="window.print()">⬇ Export PDF</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MAIN CONTENT
+═══════════════════════════════════════════════════ -->
+<div class="main-content">
+
+<!-- ── VENUE & SHOW INFO ─────────────────────────── -->
+<div class="section-card">
+  <div class="section-card-header">
+    <h2 class="section-title">Venue &amp; Show Info</h2>
+  </div>
+  <div class="section-body">
+    <div class="field-row">
+      <div class="field-group"><div class="field-label">Band Name</div>
+        <input class="field-input" id="band-name" placeholder="Band name…" oninput="venueChanged()"></div>
+      <div class="field-group"><div class="field-label">Venue</div>
+        <input class="field-input" id="venue-name" placeholder="Venue name…" oninput="venueChanged()"></div>
+      <div class="field-group"><div class="field-label">City</div>
+        <input class="field-input" id="venue-city" placeholder="City…" oninput="venueChanged()"></div>
+      <div class="field-group"><div class="field-label">Show Date</div>
+        <input class="field-input" type="date" id="show-date" oninput="venueChanged()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field-group"><div class="field-label">FOH Engineer</div>
+        <input class="field-input" id="foh-engineer" placeholder="Name…" oninput="venueChanged()"></div>
+      <div class="field-group"><div class="field-label">FOH Contact</div>
+        <input class="field-input" id="foh-contact" placeholder="Email / phone…" oninput="venueChanged()"></div>
+      <div class="field-group" style="flex:2"><div class="field-label">General Notes</div>
+        <input class="field-input" id="general-notes" placeholder="Advance notes…" oninput="venueChanged()"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── BIO ─────────────────────────────────────────── -->
+<div class="section-card">
+  <div class="section-card-header">
+    <h2 class="section-title">Bio</h2>
+  </div>
+  <div class="section-body">
+    <div class="subsection-label">Band Members</div>
+    <div class="list-rows" id="members-list"></div>
+    <button class="add-row-btn no-print" onclick="addMember()">+ Add Member</button>
+
+    <div class="subsection-label">Contacts</div>
+    <div class="list-rows" id="contacts-list"></div>
+    <button class="add-row-btn no-print" onclick="addContact()">+ Add Contact</button>
+  </div>
+</div>
+
+<!-- ── AUDIO ─────────────────────────────────────── -->
+<div class="section-card">
+  <div class="section-card-header">
+    <h2 class="section-title">Audio</h2>
+  </div>
+  <div class="section-body">
+
+    <div class="subsection-label">FOH</div>
+    <div id="foh-blocks"></div>
+    <button class="add-row-btn no-print" onclick="addTextBlock('foh')">+ Add Paragraph</button>
+
+    <div class="subsection-label">Monitors</div>
+    <div id="monitors-blocks"></div>
+    <button class="add-row-btn no-print" onclick="addTextBlock('monitors')">+ Add Paragraph</button>
+
+  </div>
+</div>
+
+<!-- ── CHANNEL LIST ───────────────────────────────── -->
+<div class="section-card">
+  <div class="section-card-header">
+    <h2 class="section-title">Channel Count / Mic Package</h2>
+  </div>
+  <div class="section-body">
+
+    <div class="subsection-label">Intro Note</div>
+    <textarea class="editable-block" id="channel-intro" rows="2" placeholder="Intro note for the venue…" oninput="queueSave()"></textarea>
+
+    <div class="subsection-label" style="margin-top:20px;">Inputs</div>
+    <div class="table-wrap">
+      <table class="channel-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Instrument</th>
+            <th>Mic / DI Preferred</th>
+            <th>Stand</th>
+            <th>Musician</th>
+            <th>Notes</th>
+            <th class="no-print" style="width:28px;"></th>
+          </tr>
+        </thead>
+        <tbody id="channel-tbody"></tbody>
+      </table>
+    </div>
+    <button class="table-add-btn no-print" onclick="addChannelRow()">+ Add Row</button>
+  </div>
+</div>
+
+<!-- ── STAGE PLOT ─────────────────────────────────── -->
+<div class="section-card">
+  <div class="section-card-header">
+    <h2 class="section-title">Stage Plot</h2>
+    <div class="no-print" style="display:flex;gap:6px;margin-left:auto;" id="stage-lock-controls"></div>
+  </div>
+  <div class="section-body">
+
+    <div class="stage-controls no-print">
+      <span class="stage-size-label" id="stage-hint-text">Drag blocks onto the stage · Double-click to rename · Drag ◢ corner to resize · Delete key to remove</span>
+    </div>
+
+    <div class="stage-outer">
+      <div id="stage-canvas" class="stage-canvas">
+        <div class="stage-label-bar">▲ UPSTAGE</div>
+      </div>
+      <div class="stage-audience-label">◉ AUDIENCE / DOWNSTAGE</div>
+    </div>
+
+    <div class="subsection-label no-print" style="margin-top:20px;">Block Palette — drag onto stage</div>
+    <div class="stage-palette no-print" id="stage-palette"></div>
+
+  </div>
+</div>
+
+<!-- ── MONITOR MIXES ─────────────────────────────── -->
+<div class="section-card">
+  <div class="section-card-header">
+    <h2 class="section-title">Monitor Mixes</h2>
+    <button class="add-row-btn no-print" style="margin-left:auto;margin-top:0;" onclick="addMixCard()">+ Add Mix</button>
+  </div>
+  <div class="section-body">
+    <div class="cards-grid" id="cards-container"></div>
+    <div class="timestamp" id="timestamp"></div>
+  </div>
+</div>
+
+</div><!-- /main-content -->
+</div><!-- /app -->
+
+<!-- ═══════════════════════════════════════════════════
+     FIREBASE
+═══════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }                        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set, get }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyC1IlHqNOYFL41AfJ4nOrQQ_OptZSqxrV0",
+  authDomain:"band-monitor-rider.firebaseapp.com",
+  databaseURL:"https://band-monitor-rider-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"band-monitor-rider",
+  storageBucket:"band-monitor-rider.firebasestorage.app",
+  messagingSenderId:"409761536372",
+  appId:"1:409761536372:web:32d2cf747bac993b54f421"
+};
+
+const fbApp    = initializeApp(firebaseConfig);
+const db       = getDatabase(fbApp);
+const riderRef = ref(db, 'riderv5');
+
+/* ── PALETTE ──────────────────────────────────────────── */
+const PALETTE = [
+  {type:'drums',   icon:'🥁', label:'Drums',      color:'#4c1d95', defaultW:100,defaultH:90},
+  {type:'bass',    icon:'🎸', label:'Bass',       color:'#1e3a8a', defaultW:75, defaultH:65},
+  {type:'guitar',  icon:'🎸', label:'Guitar',     color:'#78350f', defaultW:75, defaultH:65},
+  {type:'amp',     icon:'🔊', label:'Amp',        color:'#374151', defaultW:70, defaultH:60},
+  {type:'vocals',  icon:'🎤', label:'Vocals',     color:'#881337', defaultW:70, defaultH:65},
+  {type:'keys',    icon:'🎹', label:'Keys',       color:'#134e4a', defaultW:90, defaultH:60},
+  {type:'monitor', icon:'📣', label:'Wedge',      color:'#1f2937', defaultW:65, defaultH:50},
+  {type:'iem',     icon:'🎧', label:'IEM Pack',   color:'#1f2937', defaultW:60, defaultH:50},
+  {type:'socket',  icon:'⚡', label:'13A Socket', color:'#451a03', defaultW:55, defaultH:45},
+  {type:'generic', icon:'⬜', label:'Custom',     color:'#1e3a5f', defaultW:70, defaultH:60},
+];
+
+const DEFAULT_MONITOR_CHANNELS = [
+  'Kick','Snare','Toms','Hats','Overheads',
+  'Bass (Sam)','Guitar 1 (Juan)','Guitar 2 (Jim)',
+  'Lead Vox (Izzie)','BV 1 (Juan)','BV 2 (Sam)','Click','Track'
+];
+
+/* ── STATE ─────────────────────────────────────────────── */
+let state = {
+  theme:'dark',
+  venue:{band:'Midnight in November',venue:'',city:'',date:'',foh:'',fohContact:'',notes:''},
+  bio:{
+    members:[
+      {id:'m1',name:'Izzie',role:'Vocals'},
+      {id:'m2',name:'Juan', role:'Guitar'},
+      {id:'m3',name:'Jim',  role:'Guitar'},
+      {id:'m4',name:'Sam',  role:'Bass'},
+      {id:'m5',name:'Chris',role:'Drums'}
+    ],
+    contacts:[{id:'c1',name:'',phone:'',email:''}]
+  },
+  audio:{
+    foh:[
+      'FOH system & control should be suitable for the size of venue, audience capacity, and style of music, including the facility to support amplified electric guitars and acoustic drums with appropriate microphones.',
+      'System manufacturers should be one of: d&b, L\'Acoustics, Martin. Other systems will be considered but should be checked with the band.',
+      'System should include (at a minimum) subwoofers, full range tops, and front fill to ensure a good balance throughout the venue.',
+      'Control should be a digital console where possible, with facilities for a minimum of 16 inputs, 2 main outputs, and 5 separate monitor mixes.'
+    ],
+    monitors:[
+      'Where possible, stereo in-ear monitoring should be provided including: 2x wireless, 3x wired.',
+      'Plus 2x wedges (d&b M4 or equivalent).',
+      'Please see the Monitor Mix section below to get an idea of how to setup our mixes. This should speed up soundcheck significantly.'
+    ]
+  },
+  channels:{
+    intro:'Please use the following list as a guide for channel count & microphone requirements. Industry standard alternatives can be used as required.',
+    rows:[
+      {id:'ch1', instrument:'Kick (in)',    mic:'Beta 91a',    stand:'',            musician:'Chris', notes:''},
+      {id:'ch2', instrument:'Kick (out)',   mic:'Audix D6',    stand:'Small Boom',  musician:'Chris', notes:''},
+      {id:'ch3', instrument:'Snare Top',    mic:'SM57',        stand:'Small Boom',  musician:'Chris', notes:''},
+      {id:'ch4', instrument:'Snare Bottom', mic:'SM57',        stand:'Small Boom',  musician:'Chris', notes:''},
+      {id:'ch5', instrument:'Hi Hats',      mic:'C451b',       stand:'Medium Boom', musician:'Chris', notes:''},
+      {id:'ch6', instrument:'Tom 1',        mic:'Audix D4',    stand:'Clip',        musician:'Chris', notes:''},
+      {id:'ch7', instrument:'Tom 2',        mic:'Audix D4',    stand:'Clip',        musician:'Chris', notes:''},
+      {id:'ch8', instrument:'OH L',         mic:'C414',        stand:'Large Boom',  musician:'Chris', notes:''},
+      {id:'ch9', instrument:'OH R',         mic:'C414',        stand:'Large Boom',  musician:'Chris', notes:''},
+      {id:'ch10',instrument:'Bass',         mic:'DI',          stand:'',            musician:'Sam',   notes:''},
+      {id:'ch11',instrument:'Guitar 1',     mic:'DI',          stand:'',            musician:'Juan',  notes:''},
+      {id:'ch12',instrument:'Guitar 2',     mic:'SM57',        stand:'Small Boom',  musician:'Jim',   notes:''},
+      {id:'ch13',instrument:'Lead Vox',     mic:'Beta 58/SM58',stand:'Large Boom',  musician:'Izzie', notes:''},
+      {id:'ch14',instrument:'BV 1',         mic:'SM58',        stand:'Large Boom',  musician:'Juan',  notes:''},
+      {id:'ch15',instrument:'BV 2',         mic:'SM58',        stand:'Large Boom',  musician:'Sam',   notes:''},
+    ]
+  },
+  stage:{size:'10x6', locked:false, blocks:[]},
+  mixCards:[],
+  mixCardIdCounter:0
+};
+
+let ignoreNext=false, saveTimer=null;
+
+/* ── FIREBASE ─────────────────────────────────────────── */
+onValue(riderRef, snap=>{
+  if(ignoreNext){ignoreNext=false;return;}
+  const data=snap.val();
+  if(data){ state=deepMerge(state,data); renderAll(); }
+  document.getElementById('loading-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  setSyncStatus('ok','Live');
+});
+
+function saveToFirebase(){
+  setSyncStatus('saving','Saving…');
+  ignoreNext=true;
+  set(riderRef,state)
+    .then(()=>setSyncStatus('ok','Live'))
+    .catch(()=>setSyncStatus('error','Save failed'));
+}
+
+window.queueSave=function(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(saveToFirebase,700);
+};
+
+function setSyncStatus(s,label){
+  const dot=document.getElementById('sync-dot');
+  const lbl=document.getElementById('sync-label');
+  if(dot) dot.className='sync-dot '+s;
+  if(lbl) lbl.textContent=label;
+}
+
+function deepMerge(base,over){
+  const r={...base};
+  for(const k in over){
+    if(over[k]!==null&&typeof over[k]==='object'&&!Array.isArray(over[k]))
+      r[k]=deepMerge(base[k]||{},over[k]);
+    else r[k]=over[k];
+  }
+  return r;
+}
+
+/* ── THEME ────────────────────────────────────────────── */
+window.toggleTheme=function(){
+  state.theme=state.theme==='dark'?'light':'dark';
+  applyTheme();
+  queueSave();
+};
+
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme',state.theme||'dark');
+  const btn=document.getElementById('theme-btn');
+  if(btn) btn.textContent=state.theme==='dark'?'☀️':'🌙';
+}
+
+/* ── RENDER ALL ───────────────────────────────────────── */
+function renderAll(){
+  applyTheme();
+  renderVenue();
+  renderBio();
+  renderAudio();
+  renderChannels();
+  renderStage();
+  renderMixCards();
+  updateHeaderBandName();
+}
+
+function updateHeaderBandName(){
+  const el=document.getElementById('header-band-name');
+  if(el) el.textContent=state.venue?.band||'Band Rider';
+}
+
+/* ════════════════════════════════════════════════════════
+   VENUE
+════════════════════════════════════════════════════════ */
+window.venueChanged=function(){
+  state.venue={
+    band:      gv('band-name'),
+    venue:     gv('venue-name'),
+    city:      gv('venue-city'),
+    date:      gv('show-date'),
+    foh:       gv('foh-engineer'),
+    fohContact:gv('foh-contact'),
+    notes:     gv('general-notes')
+  };
+  updateHeaderBandName();
+  queueSave();
+};
+
+function renderVenue(){
+  sv('band-name',    state.venue?.band);
+  sv('venue-name',   state.venue?.venue);
+  sv('venue-city',   state.venue?.city);
+  sv('show-date',    state.venue?.date);
+  sv('foh-engineer', state.venue?.foh);
+  sv('foh-contact',  state.venue?.fohContact);
+  sv('general-notes',state.venue?.notes);
+}
+
+/* ════════════════════════════════════════════════════════
+   BIO
+════════════════════════════════════════════════════════ */
+function renderBio(){
+  // Members
+  const mlist=document.getElementById('members-list');
+  if(mlist){
+    mlist.innerHTML='';
+    (state.bio.members||[]).forEach((m,i)=>{
+      const row=document.createElement('div');
+      row.className='list-row';
+      row.innerHTML=`
+        <input class="field-input" style="flex:1;min-width:100px" placeholder="Name…" value="${esc(m.name)}"
+          oninput="updateMember(${i},'name',this.value)">
+        <input class="field-input" style="flex:2" placeholder="Role / Instrument…" value="${esc(m.role)}"
+          oninput="updateMember(${i},'role',this.value)">
+        <button class="del-btn no-print" onclick="deleteMember(${i})">−</button>`;
+      mlist.appendChild(row);
+    });
+  }
+  // Contacts
+  const clist=document.getElementById('contacts-list');
+  if(clist){
+    clist.innerHTML='';
+    (state.bio.contacts||[]).forEach((c,i)=>{
+      const row=document.createElement('div');
+      row.className='list-row';
+      row.innerHTML=`
+        <input class="field-input" style="flex:1;min-width:100px" placeholder="Name…" value="${esc(c.name)}"
+          oninput="updateContact(${i},'name',this.value)">
+        <input class="field-input" style="flex:1" placeholder="Phone…" value="${esc(c.phone)}"
+          oninput="updateContact(${i},'phone',this.value)">
+        <input class="field-input" style="flex:2" placeholder="Email…" value="${esc(c.email)}"
+          oninput="updateContact(${i},'email',this.value)">
+        <button class="del-btn no-print" onclick="deleteContact(${i})">−</button>`;
+      clist.appendChild(row);
+    });
+  }
+}
+
+window.addMember=function(){ state.bio.members.push({id:uid(),name:'',role:''}); renderBio(); queueSave(); };
+window.deleteMember=function(i){ state.bio.members.splice(i,1); renderBio(); queueSave(); syncMembersToMixes(); };
+window.updateMember=function(i,f,v){ state.bio.members[i][f]=v; queueSave(); };
+
+window.addContact=function(){ state.bio.contacts.push({id:uid(),name:'',phone:'',email:''}); renderBio(); queueSave(); };
+window.deleteContact=function(i){ state.bio.contacts.splice(i,1); renderBio(); queueSave(); };
+window.updateContact=function(i,f,v){ state.bio.contacts[i][f]=v; queueSave(); };
+
+/* ════════════════════════════════════════════════════════
+   AUDIO TEXT BLOCKS
+════════════════════════════════════════════════════════ */
+function renderAudio(){
+  renderTextBlocks('foh','foh-blocks');
+  renderTextBlocks('monitors','monitors-blocks');
+}
+
+function renderTextBlocks(key,cid){
+  const container=document.getElementById(cid);
+  if(!container) return;
+  container.innerHTML='';
+  (state.audio[key]||[]).forEach((text,i)=>{
+    const wrap=document.createElement('div');
+    wrap.className='text-block-wrap';
+    const ta=document.createElement('textarea');
+    ta.className='editable-block';
+    ta.placeholder='Paragraph…';
+    ta.value=text||'';
+    // Auto-size to content
+    ta.style.height='auto';
+    ta.addEventListener('input',()=>{
+      state.audio[key][i]=ta.value;
+      autoHeight(ta);
+      queueSave();
+    });
+    // Restore saved height or auto-fit
+    if(state.audio[key+'Heights']?.[i]){
+      ta.style.height=state.audio[key+'Heights'][i]+'px';
+    }
+    // Save height on manual resize (mouseup)
+    ta.addEventListener('mouseup',()=>{
+      if(!state.audio[key+'Heights']) state.audio[key+'Heights']=[];
+      state.audio[key+'Heights'][i]=ta.offsetHeight;
+      queueSave();
+    });
+    const delBtn=document.createElement('button');
+    delBtn.className='para-del-btn no-print';
+    delBtn.title='Remove paragraph';
+    delBtn.textContent='−';
+    delBtn.addEventListener('click',()=>{ state.audio[key].splice(i,1); if(state.audio[key+'Heights']) state.audio[key+'Heights'].splice(i,1); renderAudio(); queueSave(); });
+    wrap.appendChild(ta);
+    wrap.appendChild(delBtn);
+    container.appendChild(wrap);
+    // After insert, auto-size
+    requestAnimationFrame(()=>autoHeight(ta));
+  });
+}
+
+function autoHeight(ta){
+  ta.style.height='auto';
+  ta.style.height=Math.max(72,ta.scrollHeight)+'px';
+}
+
+window.addTextBlock=function(key){ state.audio[key].push(''); renderAudio(); queueSave(); };
+
+/* ════════════════════════════════════════════════════════
+   CHANNEL TABLE
+════════════════════════════════════════════════════════ */
+function renderChannels(){
+  const tbody=document.getElementById('channel-tbody');
+  if(!tbody) return;
+  tbody.innerHTML='';
+  const intro=document.getElementById('channel-intro');
+  if(intro&&!intro.matches(':focus')){ intro.value=state.channels.intro||''; requestAnimationFrame(()=>autoHeight(intro)); }
+
+  (state.channels.rows||[]).forEach((row,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${i+1}</td>
+      <td><input value="${esc(row.instrument)}" placeholder="Instrument…" oninput="updateChannelCell(${i},'instrument',this.value)"></td>
+      <td><input value="${esc(row.mic)}"        placeholder="Mic / DI…"   oninput="updateChannelCell(${i},'mic',this.value)"></td>
+      <td><input value="${esc(row.stand)}"      placeholder="Stand…"      oninput="updateChannelCell(${i},'stand',this.value)"></td>
+      <td><input value="${esc(row.musician)}"   placeholder="Name…"       oninput="updateChannelCell(${i},'musician',this.value)"></td>
+      <td><input value="${esc(row.notes||'')}"  placeholder="e.g. power for pedalboard…" oninput="updateChannelCell(${i},'notes',this.value)"></td>
+      <td class="no-print"><button class="row-del" onclick="deleteChannelRow(${i})">−</button></td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+window.addChannelRow=function(){ state.channels.rows.push({id:uid(),instrument:'',mic:'',stand:'',musician:'',notes:''}); renderChannels(); queueSave(); };
+window.deleteChannelRow=function(i){ state.channels.rows.splice(i,1); renderChannels(); queueSave(); };
+window.updateChannelCell=function(i,f,v){ state.channels.rows[i][f]=v; queueSave(); };
+
+document.getElementById('channel-intro')?.addEventListener('input',e=>{ 
+  state.channels.intro=e.target.value; 
+  autoHeight(e.target);
+  queueSave(); 
+});
+
+/* ════════════════════════════════════════════════════════
+   STAGE PLOT
+════════════════════════════════════════════════════════ */
+let selectedBlockId=null, dragState=null, resizeState=null;
+
+function renderStage(){
+  const canvas=document.getElementById('stage-canvas');
+  if(!canvas) return;
+  canvas.querySelectorAll('.stage-block').forEach(b=>b.remove());
+  (state.stage.blocks||[]).forEach(b=>mountBlock(b));
+  renderStageLockBtn();
+  if(state.stage.locked) canvas.classList.add('locked-stage');
+  else canvas.classList.remove('locked-stage');
+}
+
+function renderStagePalette(){
+  const palette=document.getElementById('stage-palette');
+  if(!palette) return;
+  palette.innerHTML='';
+  PALETTE.forEach(pb=>{
+    const el=document.createElement('div');
+    el.className='palette-block';
+    el.style.background=pb.color;
+    el.innerHTML=`<span class="picon">${pb.icon}</span>${pb.label}`;
+    el.draggable=true;
+    el.addEventListener('dragstart',e=>{ e.dataTransfer.setData('palette-type',pb.type); });
+    palette.appendChild(el);
+  });
+}
+
+function renderStageLockBtn(){
+  const ctrl=document.getElementById('stage-lock-controls');
+  if(!ctrl) return;
+  ctrl.innerHTML=`
+    <button class="icon-btn ${state.stage.locked?'active':''}" title="${state.stage.locked?'Unlock stage':'Lock stage'}" onclick="toggleStageLock()">
+      ${state.stage.locked?'🔒':'🔓'}
+    </button>
+    ${state.stage.locked?`<button class="icon-btn confirm" title="Unlock" onclick="toggleStageLock()">✓</button>`:''}
+  `;
+  const hint=document.getElementById('stage-hint-text');
+  if(hint) hint.textContent=state.stage.locked?'Stage is locked. Click 🔓 to edit.':'Double-click to rename · Drag corner to resize · Delete key to remove';
+}
+
+window.toggleStageLock=function(){
+  state.stage.locked=!state.stage.locked;
+  renderStage();
+  queueSave();
+};
+
+function mountBlock(blockData){
+  const canvas=document.getElementById('stage-canvas');
+  if(!canvas) return;
+  const pb=PALETTE.find(p=>p.type===blockData.type)||PALETTE[PALETTE.length-1];
+  const el=document.createElement('div');
+  el.className='stage-block';
+  el.dataset.blockId=blockData.id;
+  el.style.cssText=`left:${blockData.x||10}px;top:${blockData.y||40}px;width:${blockData.w||pb.defaultW}px;height:${blockData.h||pb.defaultH}px;background:${pb.color};`;
+  el.innerHTML=`
+    <div class="block-icon">${pb.icon}</div>
+    <div class="block-name">${esc(blockData.name||pb.label)}</div>
+    <div class="resize-handle no-print">◢</div>`;
+
+  // Select on mousedown
+  el.addEventListener('mousedown',e=>{
+    if(state.stage.locked) return;
+    if(e.target.classList.contains('resize-handle')) return;
+    e.preventDefault();
+    selectBlock(blockData.id,el);
+    const canvas=document.getElementById('stage-canvas');
+    const rect=canvas.getBoundingClientRect();
+    dragState={el,blockId:blockData.id,startX:e.clientX-rect.left-blockData.x,startY:e.clientY-rect.top-blockData.y};
+  });
+
+  // Resize handle
+  const handle=el.querySelector('.resize-handle');
+  handle?.addEventListener('mousedown',e=>{
+    if(state.stage.locked) return;
+    e.preventDefault();e.stopPropagation();
+    selectBlock(blockData.id,el);
+    resizeState={el,blockId:blockData.id,startX:e.clientX,startY:e.clientY,startW:blockData.w||pb.defaultW,startH:blockData.h||pb.defaultH};
+  });
+
+  // Double-click rename
+  el.addEventListener('dblclick',e=>{
+    if(state.stage.locked) return;
+    e.stopPropagation();
+    const nameDiv=el.querySelector('.block-name');
+    const cur=nameDiv.textContent;
+    nameDiv.style.display='none';
+    const input=document.createElement('input');
+    input.className='block-name-input';
+    input.value=cur;
+    el.appendChild(input);
+    input.focus();input.select();
+    const finish=()=>{
+      const b=state.stage.blocks.find(b=>b.id===blockData.id);
+      if(b){b.name=input.value;blockData.name=input.value;}
+      nameDiv.textContent=input.value;
+      nameDiv.style.display='';
+      input.remove();
+      queueSave();
+    };
+    input.addEventListener('blur',finish);
+    input.addEventListener('keydown',e=>{if(e.key==='Enter')finish();});
+  });
+
+  canvas.appendChild(el);
+  if(blockData.id===selectedBlockId) el.classList.add('selected');
+}
+
+function selectBlock(id,el){
+  selectedBlockId=id;
+  document.querySelectorAll('.stage-block').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+document.addEventListener('mousemove',e=>{
+  if(dragState){
+    const canvas=document.getElementById('stage-canvas');
+    if(!canvas) return;
+    const rect=canvas.getBoundingClientRect();
+    const b=state.stage.blocks.find(b=>b.id===dragState.blockId);
+    if(!b) return;
+    let x=e.clientX-rect.left-dragState.startX;
+    let y=e.clientY-rect.top-dragState.startY;
+    x=Math.max(0,Math.min(x,canvas.offsetWidth-(b.w||70)));
+    y=Math.max(0,Math.min(y,canvas.offsetHeight-(b.h||60)));
+    b.x=x;b.y=y;
+    dragState.el.style.left=x+'px';
+    dragState.el.style.top=y+'px';
+  }
+  if(resizeState){
+    const b=state.stage.blocks.find(b=>b.id===resizeState.blockId);
+    if(!b) return;
+    const dx=e.clientX-resizeState.startX;
+    const dy=e.clientY-resizeState.startY;
+    b.w=Math.max(48,resizeState.startW+dx);
+    b.h=Math.max(40,resizeState.startH+dy);
+    resizeState.el.style.width=b.w+'px';
+    resizeState.el.style.height=b.h+'px';
+  }
+});
+
+document.addEventListener('mouseup',()=>{
+  if(dragState||resizeState){ queueSave(); }
+  dragState=null; resizeState=null;
+});
+
+document.addEventListener('keydown',e=>{
+  if((e.key==='Delete'||e.key==='Backspace')&&selectedBlockId&&!e.target.matches('input,textarea')){
+    state.stage.blocks=state.stage.blocks.filter(b=>b.id!==selectedBlockId);
+    document.querySelector(`[data-block-id="${selectedBlockId}"]`)?.remove();
+    selectedBlockId=null;
+    queueSave();
+  }
+});
+
+// Drop from palette
+const stageCanvas=document.getElementById('stage-canvas');
+stageCanvas?.addEventListener('dragover',e=>e.preventDefault());
+stageCanvas?.addEventListener('drop',e=>{
+  e.preventDefault();
+  if(state.stage.locked) return;
+  const type=e.dataTransfer.getData('palette-type');
+  if(!type) return;
+  const pb=PALETTE.find(p=>p.type===type)||PALETTE[PALETTE.length-1];
+  const rect=stageCanvas.getBoundingClientRect();
+  const x=Math.max(0,e.clientX-rect.left-pb.defaultW/2);
+  const y=Math.max(30,e.clientY-rect.top-pb.defaultH/2);
+  const newBlock={id:uid(),type,name:pb.label,x,y,w:pb.defaultW,h:pb.defaultH};
+  state.stage.blocks.push(newBlock);
+  mountBlock(newBlock);
+  queueSave();
+});
+
+renderStagePalette();
+
+/* ════════════════════════════════════════════════════════
+   MONITOR MIX CARDS
+════════════════════════════════════════════════════════ */
+function syncMembersToMixes(){
+  // Auto-populate mix cards from bio members when band is first set up
+  // (only fills name/instrument, doesn't reset sliders)
+  if(!state.mixCards||state.mixCards.length===0) populateMixesFromMembers();
+}
+
+function populateMixesFromMembers(){
+  state.mixCardIdCounter=0;
+  state.mixCards=(state.bio.members||[]).map(m=>{
+    const id=++state.mixCardIdCounter;
+    return {
+      id,
+      name:m.name||'',
+      instrument:m.role||'',
+      type:'wedge',
+      notes:'',
+      editing:true,
+      channels:DEFAULT_MONITOR_CHANNELS.map(label=>({label,value:0,id:uid()}))
+    };
+  });
+  renderMixCards();
+  queueSave();
+}
+
+window.addMixCard=function(){
+  const id=++state.mixCardIdCounter;
+  state.mixCards.push({id,name:'',instrument:'',type:'wedge',notes:'',editing:true,
+    channels:DEFAULT_MONITOR_CHANNELS.map(label=>({label,value:0,id:uid()}))});
+  renderMixCards(); queueSave();
+};
+
+window.deleteMixCard=function(id){
+  if(!confirm('Remove this monitor mix?')) return;
+  state.mixCards=state.mixCards.filter(c=>c.id!==id);
+  renderMixCards(); queueSave();
+};
+
+window.toggleMixEdit=function(id){
+  const c=state.mixCards.find(c=>c.id===id);
+  if(c){c.editing=!c.editing; renderMixCards(); queueSave();}
+};
+
+window.updateMixField=function(id,field,val){
+  const c=state.mixCards.find(c=>c.id===id);
+  if(!c) return;
+  c[field]=val;
+  const av=document.querySelector(`[data-card="${id}"] .card-avatar`);
+  if(av) av.textContent=(c.name||'?')[0].toUpperCase();
+  queueSave();
+};
+
+window.updateMixSlider=function(id,chanId,val){
+  const c=state.mixCards.find(c=>c.id===id);
+  if(!c) return;
+  const ch=c.channels.find(ch=>ch.id===chanId);
+  if(ch) ch.value=parseInt(val);
+  const fill =document.querySelector(`[data-chan="${chanId}"] .slider-fill`);
+  const badge=document.querySelector(`[data-chan="${chanId}"] .value-badge`);
+  if(fill)  fill.style.width=val+'%';
+  if(badge) badge.textContent=val+'%';
+  queueSave();
+};
+
+window.updateMixChanLabel=function(id,chanId,label){
+  const c=state.mixCards.find(c=>c.id===id);
+  if(!c) return;
+  const ch=c.channels.find(ch=>ch.id===chanId);
+  if(ch){ch.label=label; queueSave();}
+};
+
+window.deleteMixChannel=function(id,chanId){
+  const c=state.mixCards.find(c=>c.id===id);
+  if(!c) return;
+  c.channels=c.channels.filter(ch=>ch.id!==chanId);
+  renderMixCards(); queueSave();
+};
+
+window.addMixChannel=function(id){
+  const input=document.querySelector(`[data-add-input="${id}"]`);
+  if(!input) return;
+  const label=input.value.trim();
+  if(!label) return;
+  const c=state.mixCards.find(c=>c.id===id);
+  if(!c) return;
+  c.channels.push({label,value:0,id:uid()});
+  input.value='';
+  renderMixCards(); queueSave();
+};
+
+function renderMixCards(){
+  const container=document.getElementById('cards-container');
+  if(!container) return;
+  container.innerHTML='';
+
+  (state.mixCards||[]).forEach(card=>{
+    const el=document.createElement('div');
+    el.className='mixer-card'+(card.editing?' editing':'');
+    el.setAttribute('data-card',card.id);
+    const typeCls  =card.type==='iem'?'iem':'wedge';
+    const typeLabel=card.type==='iem'?'IEM':'Wedge';
+
+    el.innerHTML=`
+      <div class="card-header">
+        <div class="card-avatar">${(card.name||'?')[0].toUpperCase()}</div>
+        <div class="card-identity">
+          <input type="text" placeholder="Musician name…" value="${esc(card.name)}"
+            ${card.editing?'':'readonly'} oninput="updateMixField(${card.id},'name',this.value)">
+          <div class="sub-row">
+            <input type="text" class="instrument-input" placeholder="Instrument…" value="${esc(card.instrument)}"
+              ${card.editing?'':'readonly'} oninput="updateMixField(${card.id},'instrument',this.value)">
+            ${card.editing
+              ?`<select class="card-type-select" onchange="updateMixField(${card.id},'type',this.value)">
+                  <option value="wedge" ${card.type==='wedge'?'selected':''}>Wedge</option>
+                  <option value="iem"   ${card.type==='iem'  ?'selected':''}>IEM</option>
+                </select>`
+              :`<span class="type-badge ${typeCls}">${typeLabel}</span>`}
+          </div>
+        </div>
+        <div class="card-controls no-print">
+          <button class="icon-btn ${card.editing?'active':''}" onclick="toggleMixEdit(${card.id})">${card.editing?'🔓':'🔒'}</button>
+          ${card.editing?`<button class="icon-btn confirm" onclick="toggleMixEdit(${card.id})">✓</button>`:''}
+          <button class="icon-btn" style="color:#f87171" onclick="deleteMixCard(${card.id})">✕</button>
+        </div>
+      </div>
+      <div class="channels-list ${card.editing?'':'locked-overlay'}">
+        ${(card.channels||[]).map(ch=>`
+          <div class="channel-row" data-chan="${ch.id}">
+            <div class="channel-label">
+              ${card.editing
+                ?`<input type="text" value="${esc(ch.label)}" onchange="updateMixChanLabel(${card.id},'${ch.id}',this.value)">`
+                :esc(ch.label)}
+            </div>
+            <div class="slider-wrap">
+              <div class="slider-track"><div class="slider-fill" style="width:${ch.value}%"></div></div>
+              <input type="range" min="0" max="100" value="${ch.value}"
+                ${card.editing?'':'disabled'} oninput="updateMixSlider(${card.id},'${ch.id}',this.value)">
+            </div>
+            <div class="value-badge">${ch.value}%</div>
+            ${card.editing?`<button class="del-channel-btn no-print" onclick="deleteMixChannel(${card.id},'${ch.id}')">−</button>`:''}
+          </div>`).join('')}
+      </div>
+      <textarea class="notes-area" placeholder="Notes for sound engineer…"
+        ${card.editing?'':'disabled'}
+        oninput="updateMixField(${card.id},'notes',this.value)">${esc(card.notes||'')}</textarea>
+      ${card.editing?`
+        <div class="card-footer no-print">
+          <div class="add-channel-row">
+            <input type="text" data-add-input="${card.id}" placeholder="Add channel…"
+              onkeydown="if(event.key==='Enter') addMixChannel(${card.id})">
+            <button class="add-channel-btn" onclick="addMixChannel(${card.id})">+ ADD</button>
+          </div>
+        </div>`:''}`;
+    container.appendChild(el);
+  });
+
+  const addBtn=document.createElement('button');
+  addBtn.className='add-card-btn no-print';
+  addBtn.innerHTML='+ Add Monitor Mix';
+  addBtn.onclick=window.addMixCard;
+  container.appendChild(addBtn);
+
+  const ts=document.getElementById('timestamp');
+  if(ts) ts.textContent='Last updated: '+new Date().toLocaleString();
+}
+
+/* ── PRINT ────────────────────────────────────────────── */
+window.onbeforeprint=()=>{
+  state.mixCards.forEach(c=>{c._was=c.editing;c.editing=false;});
+  renderMixCards();
+};
+window.onafterprint=()=>{
+  state.mixCards.forEach(c=>{if(c._was){c.editing=true;delete c._was;}});
+  renderMixCards();
+};
+
+/* ── UTILS ────────────────────────────────────────────── */
+function uid(){return Math.random().toString(36).slice(2);}
+function gv(id){return document.getElementById(id)?.value||'';}
+function sv(id,val){const el=document.getElementById(id);if(el&&val!=null&&!el.matches(':focus'))el.value=val;}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ── INIT ─────────────────────────────────────────────── */
+
+get(riderRef).then(snap=>{
+  if(!snap.exists()){
+    // First time — pre-populate mix cards from bio members
+    populateMixesFromMembers();
+    saveToFirebase();
+  }
+  // onValue handles the render
+});
+</script>
+</body>
+</html>
